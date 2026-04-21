@@ -58,3 +58,16 @@ object DAPGrid:
       (i,j) =>  localTokens(s.tokens,(i,j)).apply(p).toString +
                "("+localTokens(s.messages, (i,j)).apply(p).toString+")"
     )
+
+  // prints a grid showing multiple places. Shows "P(count)" for each place P that is present.
+  // If no places are present in the node, it shows "-(0)"
+  def multiGridStateToString[P](s: State[(Int,Int),P], places: Seq[P]): String =
+    val maxX = s.neighbours.keySet.map(_._1).max
+    val maxY = s.neighbours.keySet.map(_._2).max
+    Grids.gridLikeToString(maxX, maxY,
+      (i, j) => {
+        val tokens = localTokens(s.tokens, (i, j))
+        val parts = places.filter(p => tokens(p) > 0).map(p => s"${p.toString}(${tokens(p)})")
+        if (parts.isEmpty) "-(0)" else parts.mkString("")
+      }
+    )

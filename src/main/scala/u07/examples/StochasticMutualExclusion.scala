@@ -13,6 +13,7 @@ object StochasticMutualExclusion extends App:
   export u07.modelling.CTMCSimulation.*
   export u07.modelling.SPN.*
 
+  // m => 1 è una funzione da piazza a numero di token, m=> m(T) è il numero di token in T
   val spn = SPN[Place](
     Trn(MSet(N), m => 1.0,   MSet(T),  MSet()),
     Trn(MSet(T), m => m(T),  MSet(C),  MSet(C)),
