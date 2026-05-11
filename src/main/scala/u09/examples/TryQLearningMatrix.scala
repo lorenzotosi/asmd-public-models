@@ -1,5 +1,7 @@
 package scala.u09.examples
 
+import scala.collection.mutable
+import scala.u09.examples.TryQLearningMatrix.rl
 import u09.model.QMatrix
 
 object TryQLearningMatrix extends App :
@@ -82,6 +84,34 @@ object Task1 extends App:
 
 // Path with movable obstacles
 object Task2 extends App:
+
   import u09.model.QMatrix.*
   import u09.model.QMatrix.Move.*
-  import u09.model.QRLImpl
+
+  val movable = Set((3, 4), (3,3), (4,3))
+
+  val rl = FacadeWithCustomEnvironment(
+    width = 5,
+    height = 5,
+    initial = (4, 4),
+    terminal =
+      //case (0, 0) => true
+      case _ => false,
+    reward = { case ((0, 0), _) => 10; case _ => 0 },
+    jumps = Map.empty,
+    fixedObstacles = Set.empty,
+    movableObstacles = Set.empty,
+    items = Map((2,0) -> 7),
+    enemies = Map.empty,
+    gamma = 0.9,
+    alpha = 0.5,
+    epsilon = 0.4,
+    v0 = 1.0
+  )
+
+  val q0 = rl.qFunction
+  println(rl.show(q0.vFunction,"%2.2f"))
+  val q1 = rl.makeLearningInstance().learn(10000,100,q0)
+  println(rl.show(q1.vFunction,"%2.2f"))
+  println(rl.show(s => q1.bestPolicy(s).toString,"%7s"))
+

@@ -1,5 +1,7 @@
 package scala.u09.model
 
+import scala.collection.mutable
+
 object QMatrix:
 
   type Node = (Int, Int)
@@ -82,3 +84,40 @@ object QMatrix:
         (-100.0, s)
       else
         (reward.applyOrElse((s, a), _ => 0.0), jumps.orElse[(Node, Move), Node](_ => n2)(s, a))
+
+  case class FacadeWithCustomEnvironment(width: Int,
+                                         height: Int,
+                                         initial: Node,
+                                         terminal: PartialFunction[Node, Boolean],
+                                         reward: PartialFunction[(Node, Move), Double],
+                                         jumps: PartialFunction[(Node, Move), Node],
+                                         fixedObstacles: Set[Node] = Set.empty,
+                                         movableObstacles: Set[Node] = Set.empty,
+                                         items: Map[Node, Double] = Map.empty, //posizione (nodo), valore (tipo + 10)
+                                         enemies: Map[Node, Double] = Map.empty, //posizione (nodo), valore (tipo -5)
+                                         gamma: Double,
+                                         alpha: Double,
+                                         epsilon: Double = 0.0,
+                                         v0: Double)
+    extends AbstractFacade(width, height, initial, terminal, reward, jumps, gamma, alpha, epsilon, v0):
+
+    private val currentMovable = scala.collection.mutable.Set.from(movableObstacles)
+
+    override def qEnvironment(): Environment = (s: Node, a: Move) =>
+      calculateN2(s, a) match
+        case n if fixedObstacles.contains(n) => (-100.0, s)
+        case n if enemies.contains(n) => (enemies(n), s)
+        case n if items.contains(n) => (items(n), jumps.orElse[(Node, Move), Node](_ => n)(s, a))
+        case n if currentMovable.contains(n) =>
+          val nextObstaclePos = calculateN2(n, a)
+          val isBlocked = fixedObstacles.contains(nextObstaclePos) ||
+                          currentMovable.contains(nextObstaclePos) ||
+                          nextObstaclePos == n
+
+          if isBlocked then
+            (-10.0, s)
+          else
+            currentMovable.remove(n)
+            currentMovable.add(nextObstaclePos)
+            (0.0, s)
+        case n => (reward.applyOrElse((s, a), _ => 0.0), jumps.orElse[(Node, Move), Node](_ => n)(s, a))
