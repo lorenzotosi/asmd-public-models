@@ -32,35 +32,42 @@ object Task1 extends App:
   import u09.model.QMatrix.Move.*
   import u09.model.QMatrix.*
 
-  val blocked: Set[(Int, Int)] = Set(
-    (1, 0), (1, 1), (1, 2), (1, 3), // seconda colonna (x=1) tranne l'ultima posizione (y=4)
-    (2, 3), (3, 3), (4, 3)          // penultima riga (y=3) tranne la prima posizione (x=0) e (1,3) già incluso
+  /*val blocked: Set[(Int, Int)] = Set(
+    (1, 0), (1, 1), (1, 2), (1, 3),
+    (2, 3), (3, 3), (4, 3)
+  )*/
+
+  val path = Set(
+    (4, 4), (4, 3),
+    (3, 3), (2, 3),
+    (2, 2), (2, 1),
+    (1, 1),
+    (1, 0),
+    (0, 0)
   )
 
-  def nextState(s: (Int, Int), a: Move): (Int, Int) = a match
-    case UP => (s._1, (s._2 - 1) max 0)
-    case DOWN => (s._1, (s._2 + 1) min 4)
-    case LEFT => ((s._1 - 1) max 0, s._2)
-    case RIGHT => ((s._1 + 1) min 4, s._2)
+  private val blocked: Set[(Int, Int)] =
+    (for
+      x <- 0 until 5
+      y <- 0 until 5
+      if !path.contains((x, y))
+    yield (x, y)).toSet
 
-  val rl: QMatrix.Facade = Facade(
+  val rl: QMatrix.FacadeWithFixedObstacles = FacadeWithFixedObstacles(
     width = 5,
     height = 5,
     initial = (4, 4),
     terminal = {
-      //case (0, 0) => true
       case _ => false
     },
     reward = {
-      //case (s, a) if !blocked.contains(s) && nextState(s, a) == (0, 0) => 10
       case ((0, 0), _) => 10
-      case (s, a) if blocked.contains(nextState(s, a)) => -100
       case _ => 0
     },
     jumps = {
       case ((0, 0), _) => (4, 4)
-      case (s, a) if blocked.contains(nextState(s, a)) => s
     },
+    obstacles = blocked,
     gamma = 0.9,
     alpha = 0.5,
     epsilon = 0.3,
@@ -75,7 +82,6 @@ object Task1 extends App:
 
 // Path with movable obstacles
 object Task2 extends App:
-  import u09.model.QMatrix.Move.*
   import u09.model.QMatrix.*
-
-  // TODO
+  import u09.model.QMatrix.Move.*
+  import u09.model.QRLImpl
