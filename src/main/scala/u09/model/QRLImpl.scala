@@ -1,4 +1,4 @@
-package u09.model
+package scala.u09.model
 
 import annotation.tailrec
 import collection.immutable
@@ -30,7 +30,8 @@ trait QRLImpl extends QRL:
     override def update(s: State, a: Action, v: Double): Q = { map += ((s -> a) -> v); this }
     override def toString = map.toString
 
-
+  // Gestisce l'esecuzione fisica dei passi nell'ambiente tramite LazyList,
+  // permettendo di generare sequenze di azioni e stati in modo pigro (efficiente).
   case class QSystem(
                       override val environment: Environment,
                       override val initial: State,

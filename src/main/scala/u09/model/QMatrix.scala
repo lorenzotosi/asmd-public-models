@@ -1,4 +1,4 @@
-package u09.model
+package scala.u09.model
 
 object QMatrix:
 
@@ -45,3 +45,5 @@ object QMatrix:
         col <- 0 until height
       yield formatString.format(v((col, row))) + (if (col == height - 1) "\n" else "\t"))
         .mkString("")
+        
+  //case class 

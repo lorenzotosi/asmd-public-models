@@ -1,4 +1,4 @@
-package u09.model
+package scala.u09.model
 
 import u09.utils.Stochastics.{cumulative, draw}
 import u09.utils.Stochastics
@@ -11,8 +11,14 @@ trait QRL:
 
   given random: scala.util.Random = new scala.util.Random()
 
+  /**
+   * funzione che, dati uno stato e un'azione, restituisce un premio e il nuovo stato
+   */
   trait Environment extends ((State, Action) => (Reward, State))
 
+  /**
+   * aggiungo le probabilità di transizione
+   */
   trait MDP extends Environment:
     def transitions(s: State): Set[(Action, Probability, Reward, State)]
     override def apply(s: State, a: Action): (Reward, State) =
@@ -33,13 +39,15 @@ trait QRL:
   trait Q extends ((State, Action) => Reward):
     def actions: Set[Action]
     def update(s: State, a: Action, v: Reward): Q
-    def bestPolicy: Policy = s => actions.maxBy(this(s, _))
+    def bestPolicy: Policy = s => actions.maxBy(this(s, _)) //scelgo sempre azione con valore Q piu alto
+    // epsilon policy; a volte sceglie a caso per esplorare, a volte sceglie il meglio
     def epsPolicy(f: Probability): Policy = _ match
       case _ if Stochastics.drawFiltered(_ < f) => Stochastics.uniformDraw(actions)
       case s => bestPolicy(s)
     def vFunction: State => Reward = s => actions.map(this(s, _)).max
 
   // The learning system, with parameters
+    //Definisce come l'agente impara nel tempo aggiornando la funzione Q
   trait LearningProcess:
     def system: System
     def gamma: Double
