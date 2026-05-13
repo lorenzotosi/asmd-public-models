@@ -97,21 +97,22 @@ object Task2 extends App:
     terminal =
       //case (0, 0) => true
       case _ => false,
-    reward = { case ((0, 0), _) => 10; case _ => 0 },
+    reward = { case ((0, 0), _) => 15; case _ => 0 },
     jumps = Map.empty,
     fixedObstacles = Set.empty,
-    movableObstacles = Set.empty,
-    items = Map((2,0) -> 7),
+    movableObstacles = movable,
+    items = Map((2,0) -> 7, (1,1) -> 78),
     enemies = Map.empty,
     gamma = 0.9,
     alpha = 0.5,
     epsilon = 0.4,
-    v0 = 1.0
+    v0 = 1
   )
 
   val q0 = rl.qFunction
   println(rl.show(q0.vFunction,"%2.2f"))
-  val q1 = rl.makeLearningInstance().learn(10000,100,q0)
+  val q1 = rl.makeLearningInstance().learn(10000,200,q0)
   println(rl.show(q1.vFunction,"%2.2f"))
-  println(rl.show(s => q1.bestPolicy(s).toString,"%7s"))
+  //println(rl.show(s => q1.bestPolicy(s).toString,"%7s"))
+  println(rl.show(s => if rl.movableObstacles.contains(s) then "X" else q1.bestPolicy(s).toString, "%7s"))
 

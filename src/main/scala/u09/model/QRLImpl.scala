@@ -51,7 +51,8 @@ trait QRLImpl extends QRL:
     override val gamma: Double,
     override val alpha: Double,
     override val epsilon: Double,
-    override val q0: Q) extends LearningProcess:
+    override val q0: Q,
+    reset: () => Unit = () => ()) extends LearningProcess:
 
     override def updateQ(s: State, qf: Q): (State, Q) =
       val a = qf.epsPolicy(epsilon)(s)
@@ -70,4 +71,6 @@ trait QRLImpl extends QRL:
 
       episodes match
         case 0 => qf
-        case e => learn(e - 1, length, runSingleEpisode((system.initial, qf), length)._2)
+        case e =>
+          reset()
+          learn(e - 1, length, runSingleEpisode((system.initial, qf), length)._2)
